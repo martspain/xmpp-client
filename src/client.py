@@ -1,4 +1,6 @@
 from utils import console_colors
+# from getpass import getpass 
+# This is to ask for password
 
 class Client:
   def __init__(self):
