@@ -4,8 +4,7 @@ import time
 from utils import console_colors
 from server import XMPPConn
 from slixmpp.exceptions import IqError, IqTimeout
-from getpass import getpass
-# This is to ask for password
+from getpass import getpass # This is to ask for password
 
 class Client:
   def __init__(self):
@@ -104,7 +103,13 @@ class Client:
 
       # SHOW INSTRUCTIONS
       elif mainOpt == "3":
-        pass
+        print(f"{console_colors.OKGREEN}{self.strSeparator}{console_colors.ENDC}")
+        print(f"{console_colors.OKGREEN}HELP{console_colors.ENDC}")
+        print(f"{console_colors.OKGREEN}{self.strSeparator}{console_colors.ENDC}")
+
+        print(f"{console_colors.OKCYAN}{self.strSeparator}")
+        print("Select the option you want from the console menu. For more details visit: https://github.com/martspain/xmpp-client/blob/main/README.md")
+        print(f"{self.strSeparator}{console_colors.ENDC}")
 
       # EXIT APPLICATION
       elif mainOpt == "4" or mainOpt == "exit" or mainOpt == "esc" or mainOpt == "0" or mainOpt == "/exit":
@@ -131,8 +136,9 @@ class Client:
       print(f"2. {console_colors.OKCYAN}Add Contact{console_colors.ENDC}")
       print(f"3. {console_colors.OKCYAN}Contact Details{console_colors.ENDC}")
       print(f"4. {console_colors.OKCYAN}Open Chat{console_colors.ENDC}")
-      print(f"5. {console_colors.OKCYAN}Set Status{console_colors.ENDC}")
-      print(f"6. {console_colors.OKCYAN}Log Out{console_colors.ENDC}")
+      print(f"5. {console_colors.OKCYAN}Send Message{console_colors.ENDC}")
+      print(f"6. {console_colors.OKCYAN}Set Status{console_colors.ENDC}")
+      print(f"7. {console_colors.OKCYAN}Log Out{console_colors.ENDC}")
       
       opt = input(f"{console_colors.OKBLUE}{console_colors.BOLD}>>> {console_colors.ENDC}{console_colors.ENDC}{console_colors.OKGREEN}{console_colors.BOLD}")
 
@@ -153,15 +159,17 @@ class Client:
           current = contacts[n]
           name = current['user']
           stat = current['status']
-          print(f"{console_colors.OKGREEN}{n+1}.\t\t{console_colors.ENDC}{console_colors.OKCYAN}{name}\t\t{stat}{console_colors.ENDC}")
+          print(f"{console_colors.OKGREEN}{n+1}.\t\t{console_colors.ENDC}{console_colors.OKCYAN}{name}\t\t\t\t{stat}{console_colors.ENDC}")
 
       # ADD CONTACT
       elif opt == "2":
         print(f"{console_colors.OKGREEN}{self.strSeparator}{console_colors.ENDC}")
         print(f"{console_colors.OKGREEN}ADD CONTACT{console_colors.ENDC}")
         print(f"{console_colors.OKGREEN}{self.strSeparator} \n{console_colors.ENDC}")
+
         newFriend = input("Enter new contact username: ")
         success = self.conn.addContact(newFriend)
+
         if success:
           print(f"{console_colors.OKGREEN}Invitation succesfully sent!{console_colors.ENDC}")
         else:
@@ -169,18 +177,73 @@ class Client:
 
       # CONTACT DETAILS
       elif opt == "3":
-        pass
+        print(f"{console_colors.OKGREEN}{self.strSeparator}{console_colors.ENDC}")
+        print(f"{console_colors.OKGREEN}CONTACT DETAILS{console_colors.ENDC}")
+        print(f"{console_colors.OKGREEN}{self.strSeparator} \n{console_colors.ENDC}")
+
+        contacts = self.conn.getContacts()
+
+        friend = input("Enter contact username: ")
+
+        print(f"\n{console_colors.OKGREEN}Contact\t\t\t\t\t|\tStatus\t\t|{console_colors.ENDC}")
+        print(f"{console_colors.OKGREEN}{self.strSeparator}{console_colors.ENDC}")
+
+        hasFound = False
+        for con in contacts:
+          name = con["user"]
+          stat = con["status"]
+          if friend == con["user"]:
+            hasFound = True
+            print(f"{console_colors.OKCYAN}{name}\t\t{stat}{console_colors.ENDC}")
+        
+        if not hasFound:
+          print(f"{console_colors.WARNING}User was not found in your contact list.{console_colors.ENDC}")
 
       # OPEN CHAT
       elif opt == "4":
-        pass
+        print(f"{console_colors.OKGREEN}{self.strSeparator}{console_colors.ENDC}")
+        print(f"{console_colors.OKGREEN}OPEN CHAT{console_colors.ENDC}")
+        print(f"{console_colors.OKGREEN}{self.strSeparator} \n{console_colors.ENDC}")
+        self.conn.process(forever=False)
+
+      # SEND MESSAGE
+      elif opt == "5":
+        print(f"{console_colors.OKGREEN}{self.strSeparator}{console_colors.ENDC}")
+        print(f"{console_colors.OKGREEN}SEND MESSAGE{console_colors.ENDC}")
+        print(f"{console_colors.OKGREEN}{self.strSeparator} \n{console_colors.ENDC}")
+
+        contacts = self.conn.getContacts()
+        
+        print(f"{console_colors.OKGREEN}#\t|\t\t\tContact\t\t\t|\tStatus\t\t|{console_colors.ENDC}")
+        print(f"{console_colors.OKGREEN}{self.strSeparator}{console_colors.ENDC}")
+        
+        for n in range(len(contacts)):
+          current = contacts[n]
+          name = current['user']
+          stat = current['status']
+          print(f"{console_colors.OKGREEN}{n+1}.\t\t{console_colors.ENDC}{console_colors.OKCYAN}{name}\t\t\t\t{stat}{console_colors.ENDC}")
+        
+        try:
+          friendOpt = int(input("Choose the number of the user you want to send a message to: "))
+          destiny = contacts[friendOpt - 1]
+          destName = destiny["user"]
+
+          mssg = input("Enter your message: ")
+
+          self.conn.sendPrivateMessage(destName, mssg)
+          # self.conn.process(forever=False, timeout=3)
+
+        except:
+          print(f"{console_colors.WARNING}Not valid input. Please try again.{console_colors.ENDC}")
 
       # SET STATUS
-      elif opt == "5":
-        pass
+      elif opt == "6":
+        print(f"{console_colors.OKGREEN}{self.strSeparator}{console_colors.ENDC}")
+        print(f"{console_colors.OKGREEN}SET STATUS{console_colors.ENDC}")
+        print(f"{console_colors.OKGREEN}{self.strSeparator} \n{console_colors.ENDC}")
 
       # LOGOUT
-      elif opt == "exit" or opt == "esc" or opt == "0" or opt == "/exit" or opt == "6":
+      elif opt == "exit" or opt == "esc" or opt == "0" or opt == "/exit" or opt == "7":
         self.isActive = not await self.conn.endSession()
         if self.isActive:
           print(f"{console_colors.FAIL}{console_colors.BOLD}\n### Error ###{console_colors.ENDC}{console_colors.ENDC}")

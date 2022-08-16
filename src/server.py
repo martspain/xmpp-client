@@ -19,19 +19,26 @@ class XMPPConn(slixmpp.ClientXMPP):
     self.add_event_handler('session_start', self.start)
     self.add_event_handler('message', self.message)
     self.add_event_handler("got_online", self.gotOnline)
+    self.add_event_handler("got_offline", self.gotOffline)
+    self.add_event_handler("presence_subscribe", self._handle_new_subscription)
 
-  async def start(self):
+  async def start(self, ev=None):
     self.send_presence()
     await self.get_roster()
 
   def message(self, msg):
-    print('Roster: ')
-    print(self.roster)
-    print('Received')
-    print(msg)
+    output = ""
     if msg['type'] == 'chat' or msg['type'] == 'normal':
-      self.send_message(mto=msg['from'], mbody='Thanks for sending:\n%s' % msg['body'], mtype='chat')
+      output = msg['from'] + " -> " + msg['body']
+    
+    print(output)
+    # if msg['type'] == 'chat' or msg['type'] == 'normal':
+    #   self.send_message(mto=msg['from'], mbody='Thanks for sending:\n%s' % msg['body'], mtype='chat')
   
+  def sendPrivateMessage(self, dest, body):
+    self.send_message(mto=dest, mbody=body, mtype='chat', mfrom=self.localUser)
+
+
   def gotOnline(self, ev):
     user = str(ev['from'])
     if 'conference' in user:
@@ -49,10 +56,19 @@ class XMPPConn(slixmpp.ClientXMPP):
       "show": showStr, 
       "status": statusStr
     }
+  
+  def gotOffline(self, event):
+    user = str(event['from'])
+    if 'conference' in user:
+      return
 
-  def addContact(self, recipient):
+    user = user[:user.index("@")]
+    self.contacts[user]["show"] = 'UNAVAILABLE'
+    self.contacts[user]["status"] = 'UNAVAILABLE'
+
+  def addContact(self, newFriend):
     try:
-      self.send_presence_subscription(recipient, self.localUser)
+      self.send_presence_subscription(newFriend, self.localUser)
       return True
     except:
       return False
@@ -88,6 +104,29 @@ class XMPPConn(slixmpp.ClientXMPP):
       return True
     except:
       return False
+  
+  def _handle_new_subscription(self, pres):
+    roster = self.roster[pres['to']]
+    item = self.roster[pres['to']][pres['from']]
+    try_auto_sub = False
+
+    if item['whitelisted']:
+      item.authorize()
+      if roster.auto_subscribe:
+          try_auto_sub = True
+
+    # Auto authorize
+    elif roster.auto_authorize:
+      item.authorize()
+      if roster.auto_subscribe:
+          try_auto_sub = True
+
+    elif roster.auto_authorize == False:
+      item.unauthorize()
+
+    # Subscribe
+    if try_auto_sub:
+      item.subscribe()
 
 
 
@@ -97,11 +136,13 @@ class XMPPConn(slixmpp.ClientXMPP):
 # conn = XMPPConn(user, password)
 # conn.connect(use_ssl=False, disable_starttls=True)
 
-
+# try:
+#   conn.process(forever=True)
+# except:
+#   conn.disconnect(3, ignore_send_queue=True)
 # while True:
 #   inp = input("Continue? y/n: ")
 #   if inp == "y" or inp == 'Y':
-#     conn.process(forever=False)
 #   else:
 #     conn.disconnect(3, ignore_send_queue=True)
 #     print("Bye")

@@ -26,8 +26,3 @@ async def runChat():
   await cl.exec()
 
 asyncio.run(runChat())
-
-# This will be useful for showing info as table
-# print("E\t Hola")
-# print("EN\t Hola")
-# print("END\t Hola")
