@@ -29,7 +29,7 @@ Its as simple as to follow these steps:
 5. Chat!
 
 ## Dependencies
-Make sure you have the necessary dependencies to use this project:
+Make sure you have the necessary dependencies installed prior using this project:
 - [asyncio](https://docs.python.org/3/library/asyncio.html) -> asynchronous tasks
 - [slixmpp](https://slixmpp.readthedocs.io/en/latest/) -> XMPP library
 - [getpass](https://docs.python.org/3/library/getpass.html) -> hide password

@@ -5,6 +5,9 @@ from utils import console_colors
 from server import XMPPConn
 from slixmpp.exceptions import IqError, IqTimeout
 from getpass import getpass # This is to ask for password
+# import nest_asyncio
+# nest_asyncio.apply()
+# __import__('IPython').embed()
 
 class Client:
   def __init__(self):
@@ -52,6 +55,7 @@ class Client:
         self.conn = XMPPConn(self.username, password)
         self.conn.connect(use_ssl=False, disable_starttls=True)
         await self.conn.start()
+        # await self.conn.process(forever=False)
 
         # self.stopThreading = False
         # self.mainThread = threading.Thread(target = self.mainThread, args=(lambda : self.stopThreading,))
@@ -99,7 +103,39 @@ class Client:
 
       # CREATE ACCOUNT
       elif mainOpt == "2":
-        pass
+        print(f"{console_colors.OKGREEN}{self.strSeparator}{console_colors.ENDC}")
+        print(f"{console_colors.OKGREEN}CREATE ACCOUNT{console_colors.ENDC}")
+        print(f"{console_colors.OKGREEN}{self.strSeparator}{console_colors.ENDC}")
+
+        userNameInvalid = True
+        newUsername = ""
+
+        # Validate user syntax
+        while userNameInvalid:
+          print(f"{console_colors.OKCYAN}Please, enter your XMPP address (e.g. {console_colors.ENDC}{console_colors.OKGREEN}username@xmpptest.com{console_colors.ENDC}{console_colors.OKCYAN}){console_colors.ENDC}")
+          newUsername = input("user@domain: ")
+          if "@" in newUsername:
+            userNameInvalid = False
+          else:
+            print(f"{console_colors.WARNING}{console_colors.BOLD}\n### WARNING ###{console_colors.ENDC}{console_colors.ENDC}")
+            print(f"{console_colors.WARNING}Username is incorrect.{console_colors.ENDC}")
+            print(f"{console_colors.WARNING}Please use the correct syntax (username@domain) \n{console_colors.ENDC}")
+          
+        password = getpass()
+
+        # try:
+        self.conn = XMPPConn(self.username, password)
+        self.conn.connect(use_ssl=False, disable_starttls=True)
+        await self.conn.start()
+        # regSuccess = await self.conn.registerNew()
+        
+        # if regSuccess:
+        #   print(f"{console_colors.OKGREEN}Account succesfully created.{console_colors.ENDC}")
+        # else:
+        #   print(f"{console_colors.FAIL}Error creating account. Please try again.{console_colors.ENDC}")
+        # except:
+        #   print(f"{console_colors.FAIL}Error creating account. Please try again.{console_colors.ENDC}")
+
 
       # SHOW INSTRUCTIONS
       elif mainOpt == "3":
